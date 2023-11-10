@@ -12,7 +12,7 @@ const postMessagesDto = z.object({
 
 const postFilesDto = z.object({
   numbers,
-  files: z.array(z.any()).min(1),
+  files: z.array(z.any()).min(1).max(10),
   caption: z.string().min(1).optional(),
   viewOnce: z.boolean().default(false).optional()
 })

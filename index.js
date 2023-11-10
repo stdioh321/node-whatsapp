@@ -35,9 +35,8 @@ async function middlewareIsConnectedToWhatsapp(request, reply, done) {
     result = await isConnected()
   } catch (error) {}
 
-  // Check if the result is false
   if (!result) return reply.code(401).send({
-    error: 'Unauthorized'
+    error: 'Is no connected'
   });
 
   done();
@@ -79,14 +78,25 @@ fastify.post('/action/message', async (request, reply) => {
 
 
 fastify.post('/action/files', async (request, reply) => {
-  request.body.messages = JSON.parse(request.body.messages || null)
-  request.body.numbers = JSON.parse(request.body.numbers || null)
-  request.body.files = Array.isArray(request.body.files) ? request.body.files : [request.body.files]
-  request.body.viewOnce = request.body.viewOnce === 'true' ? true : false
+  const {
+    messages,
+    numbers,
+    files,
+    viewOnce,
+    caption
+  } = request.body;
 
-  const data = postFilesDto.safeParse(request.body);
-  if (!data.success) return reply.code(400).send(data.error)
-  return await whatsService.sendFiles(data.data.numbers, data.data.files, data.data.caption, data.data.viewOnce)
+  const data = postFilesDto.safeParse({
+    messages: JSON.parse(messages || null),
+    numbers: JSON.parse(numbers || null),
+    files: Array.isArray(files) ? files : [files],
+    viewOnce: viewOnce === 'true',
+    caption
+  });
+
+  return data.success ?
+    await whatsService.sendFiles(data.data.numbers, data.data.files, data.data.caption, data.data.viewOnce) :
+    reply.code(400).send(data.error);
 });
 
 fastify.get('/action/logout', async () => {
@@ -112,7 +122,6 @@ fastify.get('/connected', async (request, reply) => {
   return reply.send(false)
 });
 
-// Run the server
 const startFastify = async () => {
   try {
     await fastify.listen({
