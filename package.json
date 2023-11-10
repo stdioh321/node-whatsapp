@@ -1,0 +1,27 @@
+{
+  "name": "whatsapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "nodemon index.js --inspect=0.0.0.0:9992"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastify/multipart": "^8.0.0",
+    "fastify": "^4.24.3",
+    "fastify-file-upload": "^4.0.0",
+    "fastify-multipart": "^5.4.0",
+    "lodash": "^4.17.21",
+    "mime": "^3.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.23.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
