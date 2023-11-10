@@ -5,43 +5,52 @@ const {
 } = require('whatsapp-web.js');
 const qrTerminal = require('qrcode-terminal');
 
-let whatsClient = getDefaultClient();
+class WhatsAppSingleton {
+  static instance;
 
-whatsClient.on('qr', (qr) => {
-  console.log('QR RECEIVED');
-  const qrImage = qrTerminal.generate(qr, {
-    small: true
-  })
-  console.log(qrImage);
-});
+  static getInstance() {
+    if (!WhatsAppSingleton.instance) {
+      WhatsAppSingleton.instance = new WhatsAppSingleton();
+    }
+    return WhatsAppSingleton.instance;
+  }
 
-whatsClient.on('ready', () => {
-  console.log('Whatsapp Client is ready!');
-});
-async function isConnected() {
+  constructor() {
+    if (!WhatsAppSingleton.instance) {
+      this.whatsClient = this.getDefaultClient();
 
-  try {
-    return (await whatsClient.getState()) === WAState.CONNECTED
-  } catch (error) {
-    console.log({
-      error
+      this.whatsClient.on('qr', (qr) => {
+        console.log('QR RECEIVED');
+        const qrImage = qrTerminal.generate(qr, {
+          small: true
+        });
+        console.log(qrImage);
+      });
+
+      this.whatsClient.on('ready', () => {
+        console.log('Whatsapp Client is ready!');
+      });
+
+      WhatsAppSingleton.instance = this;
+    }
+
+    return WhatsAppSingleton.instance;
+  }
+
+  getDefaultClient() {
+    return new Client({
+      authStrategy: new LocalAuth(),
+      puppeteer: {
+        executablePath: '/usr/bin/google-chrome-stable',
+        headless: true,
+        args: ['--no-sandbox']
+      }
     });
   }
-  return false
+
+  initialize() {
+    this.whatsClient.initialize();
+  }
 }
-whatsClient.initialize()
 
-module.exports.whatsClient = whatsClient
-module.exports.isConnected = isConnected
-
-
-function getDefaultClient() {
-  return new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-      executablePath: '/usr/bin/google-chrome-stable',
-      headless: true,
-      args: ['--no-sandbox']
-    }
-  });
-}
+module.exports = WhatsAppSingleton;

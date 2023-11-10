@@ -1,10 +1,11 @@
 const {
+  MessageMedia,
+  WAState,
+} = require('whatsapp-web.js');
+const {
   sanitizeNumber,
   addSuffixToNumber
 } = require("./utils");
-const {
-  MessageMedia,
-} = require('whatsapp-web.js');
 
 class WhatsService {
   constructor(whatsClient) {
@@ -33,7 +34,6 @@ class WhatsService {
             isViewOnce: viewOnce
           })
         })
-        return 'ok'
       }))
     }))
     return result
@@ -42,7 +42,20 @@ class WhatsService {
   formatNumbers(numbers = []) {
     return numbers.map(number => addSuffixToNumber(sanitizeNumber(number)))
   }
+  async isConnected() {
+    try {
+      return (await this.whatsClient.getState()) === WAState.CONNECTED;
+    } catch (error) {
+      console.log({
+        error
+      });
+    }
+    return false;
+  }
 
+  async getCurrentState() {
+    return (await this.whatsClient.getState());
+  }
 }
 
 
