@@ -1,10 +1,10 @@
 require('whatsapp-web.js');
 const fastify = require('fastify')();
 const fileUpload = require('fastify-file-upload')
-
+const qr = require('qrcode');
 fastify.register(fileUpload);
 
-const WhatsAppSingleton = require('./whats');
+const WhatsAppSingleton = require('./whatsappSingleton');
 WhatsAppSingleton.getInstance().initialize()
 
 const {
@@ -104,7 +104,27 @@ fastify.post('/action/files', async (request, reply) => {
 fastify.get('/action/logout', async () => {
   try {
     await WhatsAppSingleton.getInstance().whatsClient.logout()
+    await WhatsAppSingleton.getInstance().whatsClient.destroy()
+    WhatsAppSingleton.instance = null;
+    await WhatsAppSingleton.getInstance().initialize()
     return true
+  } catch (error) {
+    console.log({
+      error
+    });
+  }
+  return false
+});
+
+fastify.get('/qr', async (request, reply) => {
+  try {
+    const qrString = await WhatsAppSingleton.getInstance().getQrConnection();
+    console.log({
+      qrString
+    });
+    const qrCodeDataUri = await qr.toDataURL(qrString);
+    reply.header('Content-Type', 'image/png')
+    return reply.send(Buffer.from(qrCodeDataUri.split(',')[1], 'base64'));
   } catch (error) {
     console.log({
       error
